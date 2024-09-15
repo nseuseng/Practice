@@ -1,0 +1,7 @@
+name: practice
+version: '1.0-SNAPSHOT'
+main: org.nseu.practice.Main
+api-version: '1.21'
+authors: [ nseuseng ]
+description: Practice Plugin
+website: nseu.org
