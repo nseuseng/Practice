@@ -15,6 +15,7 @@ public class Session {
 
     private static HashMap<Party, Session> sessions = new HashMap<>();
     private static HashMap<Arena, Session> sessions2 = new HashMap<>();
+    private static HashMap<UUID, Session> sessions3 = new HashMap<>();
 
     private Party party1;
     private Party party2;
@@ -22,6 +23,7 @@ public class Session {
     private GameMode gameMode;
     private boolean isRanked;
     private int size;
+    private final UUID sessionID;
 
     public Session(Party party1, Party party2, Arena arena, boolean isRanked, GameMode gameMode, int size) {
         this.party1 = party1;
@@ -30,6 +32,7 @@ public class Session {
         this.gameMode = gameMode;
         this.isRanked = isRanked;
         this.size = size;
+        this.sessionID = UUID.randomUUID();
     }
 
     public static void createSession(Party randomParty, Party party, Arena arena, boolean isRanked, GameMode gameMode, int size) {
@@ -37,7 +40,35 @@ public class Session {
         sessions.put(randomParty, session);
         sessions.put(party, session);
         sessions2.put(arena, session);
+        randomParty.getAll().forEach(uuid -> {
+            sessions3.put(uuid, session);
+        });
+        party.getAll().forEach(uuid -> {
+            sessions3.put(uuid, session);
+        });
     }
+
+    public static Session getSession(UUID uuid) {
+        return sessions3.get(uuid);
+    }
+
+    public static void destroySession(Session session) {
+        sessions.remove(session.getParty1());
+        sessions.remove(session.getParty2());
+        sessions2.remove(session.getArena());
+        session.getParty1().getAll().forEach(uuid -> {
+            if(sessions3.get(uuid).equals(session)) {
+                sessions3.put(uuid, session);
+            }
+        });
+        session.getParty2().getAll().forEach(uuid -> {
+            if(sessions3.get(uuid).equals(session)) {
+                sessions3.put(uuid, session);
+            }
+        });
+    }
+
+
 
     public int getSize() {
         return this.size;
@@ -51,6 +82,16 @@ public class Session {
         sessions.remove(session.getParty1());
         sessions.remove(session.getParty2());
         sessions2.remove(session.getArena());
+        session.getParty1().getAll().forEach(uuid -> {
+            if(sessions3.get(uuid).equals(session)) {
+                sessions3.put(uuid, session);
+            }
+        });
+        session.getParty2().getAll().forEach(uuid -> {
+            if(sessions3.get(uuid).equals(session)) {
+                sessions3.put(uuid, session);
+            }
+        });
     }
 
     public static Session getSession(Arena arena) {
@@ -61,6 +102,16 @@ public class Session {
         return sessions.getOrDefault(party, null);
     }
 
+    public Party getParty(UUID uuid) {
+        if(getParty1().contains(uuid)) {
+            return getParty1();
+        } else if(getParty2().contains(uuid)) {
+            return getParty2();
+        } else {
+            return null;
+        }
+    }
+
     public Party getParty1() {
         return party1;
     }
@@ -69,7 +120,7 @@ public class Session {
         return party2;
     }
 
-    private Arena getArena() {
+    public Arena getArena() {
         return arena;
     }
 
@@ -87,14 +138,28 @@ public class Session {
         });
     }
 
+    public void recordInventoryToMatchRecord() {
+        minvs.forEach((k, v) -> {
+            MatchRecord.setMatchInventory(this.sessionID, k, v);
+        });
+    }
+
     public GameMode getGameMode() {
         return gameMode;
     }
 
     private HashMap<UUID, MatchInventory> minvs = new HashMap<>();
 
-    public void recordInventory(UUID uniqueId, PlayerInventory inventory) {
-        MatchInventory minv = new MatchInventory(inventory.getHelmet(), inventory.getChestplate(), inventory.getLeggings(), inventory.getBoots(), inventory.getItemInOffHand(), inventory.getContents());
+    public void recordInventory(UUID uniqueId, double health, double hunger, PlayerInventory inventory) {
+        MatchInventory minv = new MatchInventory(health, hunger, inventory.getHelmet(), inventory.getChestplate(), inventory.getLeggings(), inventory.getBoots(), inventory.getItemInOffHand(), inventory.getContents());
         minvs.put(uniqueId, minv);
+    }
+
+    public UUID getSessionID() {
+        return sessionID;
+    }
+
+    public boolean isRanked() {
+        return isRanked;
     }
 }

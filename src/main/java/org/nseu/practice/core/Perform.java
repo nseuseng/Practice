@@ -1,6 +1,8 @@
 package org.nseu.practice.core;
 
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.nseu.practice.Main;
 import org.nseu.practice.arena.Arena;
 import org.nseu.practice.core.gamemode.CPVP;
 import org.nseu.practice.core.gamemode.CPVP_CUSTOM;
@@ -45,8 +47,8 @@ public class Perform {
                     PartyUtils.teleportParty(randomParty, arena.pos1());
                     PartyUtils.teleportParty(party, arena.pos2());
 
-                    PartyUtils.setPartyStatus(randomParty, PracticePlayer.Status.IS_PLAYING);
-                    PartyUtils.setPartyStatus(party, PracticePlayer.Status.IS_PLAYING);
+                    PartyUtils.setPartyStatus(randomParty, PracticePlayer.Status.IS_IN_MATCH_COOLDOWN);
+                    PartyUtils.setPartyStatus(party, PracticePlayer.Status.IS_IN_MATCH_COOLDOWN);
                     //send message
                     String msg1;
                     String msg2;
@@ -65,13 +67,42 @@ public class Perform {
                                 " vs " + nameutil.name(randomParty.getLeader()) +  "\n" +
                                 "================================";
                     }
-
                     Message.sendMessage(randomParty, msg1);
                     Message.sendMessage(party, msg2);
 
 
-                    //5 second invincible
+                    //3 second invincible
 
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            Message.sendMessage(randomParty, "1");
+                            Message.sendMessage(party, "1");
+                        }
+                    }.runTaskLater(Main.getInstance(), 20L);
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            Message.sendMessage(randomParty, "2");
+                            Message.sendMessage(party, "2");
+                        }
+                    }.runTaskLater(Main.getInstance(), 40L);
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            Message.sendMessage(randomParty, "3");
+                            Message.sendMessage(party, "3");
+                        }
+                    }.runTaskLater(Main.getInstance(), 60L);
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            Message.sendMessage(randomParty, "start!");
+                            Message.sendMessage(party, "start!");
+                            PartyUtils.setPartyStatus(randomParty, PracticePlayer.Status.IS_PLAYING);
+                            PartyUtils.setPartyStatus(party, PracticePlayer.Status.IS_PLAYING);
+                        }
+                    }.runTaskLater(Main.getInstance(), 80L);
                     break;
                 }
             }
@@ -91,10 +122,23 @@ public class Perform {
                         winner = session.getParty2();
                         loser = session.getParty1();
                     }
-                    String winnerMsg = "" +
-                            "" +
-                            "" +
-                            "";
+                    String winnerMsg = "============================" +
+                            "인벤토리 확인" +
+                            "인벤토리 확인" +
+                            "============================";
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            PartyUtils.teleportParty(winner, Main.spawn);
+                            PartyUtils.teleportParty(loser, Main.spawn);
+                            PartyUtils.setPartyStatus(winner, PracticePlayer.Status.IS_IDLE);
+                            PartyUtils.setPartyStatus(loser, PracticePlayer.Status.IS_IDLE);
+                            Arena arena = session.getArena();
+                            Session.destroySession(session);
+                            CPVP.unlockArena(arena);
+                        }
+                    }.runTaskLater(Main.getInstance(), 100L);
+
                     break;
                 }
                 default -> {

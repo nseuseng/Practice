@@ -9,12 +9,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PracticePlayer {
 
     private final UUID uuid;
-    private final Player player;
     private Status status = Status.IS_IDLE;
 
-    public PracticePlayer(UUID uuid, Player player) {
+    public PracticePlayer(UUID uuid) {
         this.uuid = uuid;
-        this.player = player;
     }
 
     public static PracticePlayer getPlayer(UUID uniqueId) {
@@ -32,21 +30,19 @@ public class PracticePlayer {
     private static ConcurrentHashMap<UUID, PracticePlayer> PlayerMap = new ConcurrentHashMap<>();
     private static final Object Lock = new Object();
 
-    public static void register(Player player) {
+    public static void register(UUID uuid) {
         synchronized (Lock) {
-            UUID uuid = player.getUniqueId();
-            PlayerMap.put(uuid, new PracticePlayer(uuid, player));
+            PlayerMap.put(uuid, new PracticePlayer(uuid));
         }
     }
 
-    public static void destroy(Player player) {
+    public static void destroy(UUID uuid) {
         synchronized (Lock) {
-            UUID uuid = player.getUniqueId();
             PlayerMap.remove(uuid);
         }
     }
 
     public enum Status {
-        IS_PLAYING, IS_QUEUING, IS_EDITING_KIT, IS_SPECTATING, IS_IN_FFA, IS_IDLE, LEFT_SERVER;
+        IS_PLAYING, IS_QUEUING, IS_EDITING_KIT, IS_SPECTATING, IS_IN_FFA, IS_IDLE, LEFT_SERVER, IS_IN_MATCH_COOLDOWN;
     }
 }
