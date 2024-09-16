@@ -45,7 +45,7 @@ public class PracticeQueue {
                 if(diff < c_maxdiff || diff < t_maxdiff) {
                     queue.remove(current);
                     queue.remove(target);
-                    Perform.startMatch(gameMode, true, current, target);
+                    Perform.startMatch(gameMode, true, current, target, party_size);
                     RankedTick();
                 }
             }
@@ -61,7 +61,7 @@ public class PracticeQueue {
             while(queue.size() >= 2) {
                 Party random1 = queue.remove(0);
                 Party random2 = queue.remove(0);
-                Perform.startMatch(this.gameMode, false, random1, random2);
+                Perform.startMatch(this.gameMode, false, random1, random2, party_size);
             }
         }
     }

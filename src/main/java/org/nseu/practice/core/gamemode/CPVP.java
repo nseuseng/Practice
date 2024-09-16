@@ -29,6 +29,7 @@ public class CPVP {
         for(Arena arena : isLocked.keySet()) {
             if(!isLocked.get(arena)) {
                 isLocked.put(arena, true);
+                arena.lock();
                 return arena;
             }
         }
@@ -37,5 +38,6 @@ public class CPVP {
 
     public static void unlockArena(Arena arena) {
         isLocked.put(arena, false);
+        arena.unlock();
     }
 }

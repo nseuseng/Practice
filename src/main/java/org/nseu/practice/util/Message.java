@@ -1,8 +1,11 @@
 package org.nseu.practice.util;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.nseu.practice.core.Party;
+
+import java.util.UUID;
 
 public class Message {
 
@@ -14,7 +17,9 @@ public class Message {
     }
 
     @Deprecated
-    public static void sendMessage(Player p, String Message) {
-        p.sendMessage(ChatColor.translateAlternateColorCodes('&', Message));
+    public static void sendMessage(UUID uuid, String Message) {
+        if(Bukkit.getOfflinePlayer(uuid).isOnline()) {
+            Bukkit.getPlayer(uuid).sendMessage(ChatColor.translateAlternateColorCodes('&', Message));
+        }
     }
 }

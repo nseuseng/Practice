@@ -15,12 +15,12 @@ public class Stats {
 
     public static int getPartyElo(Party current, GameMode gameMode) {
         if(current.getMembers().isEmpty()) {
-            return getElo(current.getLeader().getUniqueId(), gameMode);
+            return getElo(current.getLeader(), gameMode);
         } else {
             int size = current.getMembers().size();
-            int add_All_elo = getElo(current.getLeader().getUniqueId(), gameMode);
-            for(Player member : current.getMembers()) {
-                add_All_elo = add_All_elo + getElo(member.getUniqueId(), gameMode);
+            int add_All_elo = getElo(current.getLeader(), gameMode);
+            for(UUID member : current.getMembers()) {
+                add_All_elo = add_All_elo + getElo(member, gameMode);
             }
             return add_All_elo / size;
         }

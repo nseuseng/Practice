@@ -1,16 +1,26 @@
 package org.nseu.practice.listener;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockFromToEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.nseu.practice.Main;
+import org.nseu.practice.arena.Arena;
+import org.nseu.practice.core.Party;
+import org.nseu.practice.core.Perform;
+import org.nseu.practice.core.match.Session;
 import org.nseu.practice.core.player.PracticePlayer;
 import org.nseu.practice.util.InventoryGUIHolder;
+import org.nseu.practice.util.Message;
+import org.nseu.practice.util.PartyUtils;
+import org.nseu.practice.util.nameutil;
 
 public class EventListener implements Listener {
 
@@ -74,7 +84,50 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onLeave(PlayerQuitEvent e) {
-        PracticePlayer.destroy(e.getPlayer());
+        PracticePlayer.getPlayer(e.getPlayer().getUniqueId()).setStatus(PracticePlayer.Status.LEFT_SERVER);
+    }
+
+    @EventHandler
+    public void onBlockChange(BlockFromToEvent e) {
+        Arena arena = Arena.getArena(e.getBlock().getLocation());
+        if(arena != null && arena.isUsed()) {
+
+            Session.getSession(arena).record(e.getBlock().getLocation(), e.getBlock().getBlockData());
+        }
+    }
+
+    @EventHandler
+    public void onDeath(PlayerDeathEvent e) {
+        Player p = e.getPlayer();
+
+        if(PracticePlayer.getPlayer(p.getUniqueId()).getStatus() == PracticePlayer.Status.IS_PLAYING) {
+            Session session = Session.getSession(Party.getParty(p.getUniqueId()));
+            session.recordInventory(p.getUniqueId(), p.getInventory());
+            PracticePlayer.getPlayer(p.getUniqueId()).setStatus(PracticePlayer.Status.IS_SPECTATING);
+
+
+            Player killer = null;
+            if (e.getDamageSource().getDirectEntity() instanceof Player) {
+                killer = (Player) e.getDamageSource().getDirectEntity();
+            }
+
+            e.deathMessage(Component.text(""));
+            String deathmsg;
+            if(killer != null) {
+                deathmsg = nameutil.name(p.getUniqueId()) + "이가 " + killer.getName() + " 에 의해 죽었습니다";
+            } else {
+                deathmsg = nameutil.name(p.getUniqueId()) + "이가 죽었습니다";
+            }
+            Message.sendMessage(session.getParty1(), deathmsg);
+            Message.sendMessage(session.getParty2(), deathmsg);
+
+            boolean alldown = Party.getParty(p.getUniqueId()).isAllNotPlaying();
+            boolean result = !session.getParty1().getMembers().contains(p.getUniqueId());
+            if(alldown) {
+                Perform.endMatch(session, result);
+            }
+
+        }
     }
 
 }

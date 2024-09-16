@@ -5,9 +5,13 @@ import org.nseu.practice.arena.Arena;
 import org.nseu.practice.core.gamemode.CPVP;
 import org.nseu.practice.core.gamemode.CPVP_CUSTOM;
 import org.nseu.practice.core.gamemode.GameMode;
+import org.nseu.practice.core.match.Session;
+import org.nseu.practice.core.player.PracticePlayer;
+import org.nseu.practice.core.player.Stats;
 import org.nseu.practice.core.queue.Ranked;
 import org.nseu.practice.util.Message;
 import org.nseu.practice.util.PartyUtils;
+import org.nseu.practice.util.nameutil;
 
 public class Perform {
 
@@ -24,25 +28,78 @@ public class Perform {
         }
     }
 
-    public static void startMatch(GameMode gameMode, boolean isRanked, Party randomParty, Party party) {
+    public static void startMatch(GameMode gameMode, boolean isRanked, Party randomParty, Party party, int size) {
+        if(size == 1) {
+            switch (gameMode) {
+                case CPVP -> {
 
-        switch (gameMode) {
-            case CPVP -> {
-                Arena arena = CPVP.selectArenaAndLock();
-                if(arena == null) {
-                    Message.sendMessage(randomParty, "&c&lERROR &f&7아레나 맵이 부족하여 대전이 취소되었습니다");
-                    Message.sendMessage(party, "&c&lERROR &f&7아레나 맵이 부족하여 대전이 취소되었습니다");
+                    Arena arena = CPVP.selectArenaAndLock();
+                    if (arena == null) {
+                        Message.sendMessage(randomParty, "&c&lERROR &f&7아레나 맵이 부족하여 대전이 취소되었습니다");
+                        Message.sendMessage(party, "&c&lERROR &f&7아레나 맵이 부족하여 대전이 취소되었습니다");
+                    }
+
+                    Session.createSession(randomParty, party, arena, isRanked, gameMode, size);
+                    //telelport
+
+                    PartyUtils.teleportParty(randomParty, arena.pos1());
+                    PartyUtils.teleportParty(party, arena.pos2());
+
+                    PartyUtils.setPartyStatus(randomParty, PracticePlayer.Status.IS_PLAYING);
+                    PartyUtils.setPartyStatus(party, PracticePlayer.Status.IS_PLAYING);
+                    //send message
+                    String msg1;
+                    String msg2;
+                    if(isRanked) {
+                        msg1 =  "================================\n" +
+                                " vs " + nameutil.name(party.getLeader()) + " " + Stats.getElo(party.getLeader(), gameMode) +  "\n" +
+                                "================================\n";
+                        msg2 =  "================================" +
+                                " vs " + nameutil.name(randomParty.getLeader()) + " " + Stats.getElo(randomParty.getLeader(), gameMode) +  "\n" +
+                                "================================";
+                    } else {
+                        msg1 =  "================================\n" +
+                                " vs " + nameutil.name(party.getLeader()) +  "\n" +
+                                "================================\n";
+                        msg2 =  "================================" +
+                                " vs " + nameutil.name(randomParty.getLeader()) +  "\n" +
+                                "================================";
+                    }
+
+                    Message.sendMessage(randomParty, msg1);
+                    Message.sendMessage(party, msg2);
+
+
+                    //5 second invincible
+
+                    break;
                 }
+            }
+        }
+    }
 
-                //telelport
-
-                PartyUtils.teleportParty(randomParty, arena.pos1());
-
-
-                //send message
-
-                //5 second invincible
-                break;
+    public static void endMatch(Session session, boolean result) {
+        if(session.getSize() == 1) {
+            switch (session.getGameMode()) {
+                case CPVP -> {
+                    Party winner;
+                    Party loser;
+                    if(result) {
+                        winner = session.getParty1();
+                        loser = session.getParty2();
+                    } else {
+                        winner = session.getParty2();
+                        loser = session.getParty1();
+                    }
+                    String winnerMsg = "" +
+                            "" +
+                            "" +
+                            "";
+                    break;
+                }
+                default -> {
+                    break;
+                }
             }
         }
     }

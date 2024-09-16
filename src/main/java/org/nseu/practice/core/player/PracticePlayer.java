@@ -47,6 +47,6 @@ public class PracticePlayer {
     }
 
     public enum Status {
-        IS_PLAYING, IS_QUEUING, IS_EDITING_KIT, IS_SPECTATING, IS_IN_FFA, IS_IDLE;
+        IS_PLAYING, IS_QUEUING, IS_EDITING_KIT, IS_SPECTATING, IS_IN_FFA, IS_IDLE, LEFT_SERVER;
     }
 }
