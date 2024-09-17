@@ -1,6 +1,5 @@
 package org.nseu.practice.core;
 
-import org.bukkit.entity.Player;
 import org.nseu.practice.core.player.PracticePlayer;
 import org.nseu.practice.util.Message;
 import org.nseu.practice.util.nameutil;
@@ -13,6 +12,10 @@ public class Party {
 
     private UUID Leader;
     private ArrayList<UUID> Member = new ArrayList<>();
+
+    public static boolean isInParty(UUID uuid) {
+        return partyList.containsKey(uuid);
+    }
 
 
     public ArrayList<UUID> getAll() {

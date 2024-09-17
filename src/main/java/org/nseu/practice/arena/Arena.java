@@ -9,6 +9,8 @@ public class Arena {
 
     private static HashMap<String, ArrayList<Arena>> arena_by_world = new HashMap<>();
 
+    private static HashMap<String, Arena> arenas = new HashMap<>();
+
     public static Arena getArena(Location loc) {
         for(Arena arena : arena_by_world.getOrDefault(loc.getWorld().getName(), new ArrayList<>())) {
             if(arena.contains(loc)) {
@@ -63,13 +65,17 @@ public class Arena {
     private Location pos1;
     private Location pos2;
     private Location spec;
+    private Location team1;
+    private Location team2;
     private String worldName;
     private String arenaName;
-    public Arena(String arenaName, String worldName, Location pos1, Location pos2, Location spec) {
+    public Arena(String arenaName, String worldName, Location pos1, Location pos2, Location team1, Location team2, Location spec) {
         this.arenaName = arenaName;
         this.worldName = worldName;
         this.pos1 = pos1;
         this.pos2 = pos2;
+        this.team1 = team1;
+        this.team2 = team2;
         this.spec = spec;
     }
 
@@ -105,5 +111,13 @@ public class Arena {
 
     public void unlock() {
         this.currentlyUsed = false;
+    }
+
+    public Location getTeam1loc() {
+        return team1;
+    }
+
+    public Location getTeam2loc() {
+        return team2;
     }
 }

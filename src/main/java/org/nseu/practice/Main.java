@@ -4,6 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.nseu.practice.command.Command;
+import org.nseu.practice.core.gamemode.CPVP;
+import org.nseu.practice.core.menu.MatchMenu;
 import org.nseu.practice.listener.EventListener;
 
 public final class Main extends JavaPlugin {
@@ -20,9 +22,12 @@ public final class Main extends JavaPlugin {
 
         instance = this;
         EventListener.registerThis(instance);
-        Main.getInstance().getCommand("대전").setExecutor(new Command());
-        Main.getInstance().getCommand("파티").setExecutor(new Command());
-        Main.getInstance().getCommand("관전").setExecutor(new Command());
+        getCommand("대전").setExecutor(new Command());
+        getCommand("파티").setExecutor(new Command());
+        getCommand("관전").setExecutor(new Command());
+        getCommand("아레나").setExecutor(new Command());
+        MatchMenu.start();
+        CPVP.setup();
     }
 
     public static Location spawn = new Location(Bukkit.getWorld("world"), 0, 0, 0);

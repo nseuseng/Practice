@@ -3,7 +3,9 @@ package org.nseu.practice.core.gamemode;
 import org.nseu.practice.arena.Arena;
 import org.nseu.practice.core.queue.PracticeQueue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class CPVP {
 
@@ -39,5 +41,15 @@ public class CPVP {
     public static void unlockArena(Arena arena) {
         isLocked.put(arena, false);
         arena.unlock();
+    }
+
+    public static List<Arena> getActiveArenas() {
+        List<Arena> list = new ArrayList<>();
+        isLocked.forEach((k, v) -> {
+            if(v) {
+               list.add(k);
+            }
+        });
+        return list;
     }
 }

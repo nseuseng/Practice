@@ -1,13 +1,15 @@
 name: practice
 version: '1.0-SNAPSHOT'
 main: org.nseu.practice.Main
-api-version: '1.21'
+api-version: '1.21.1'
 authors: [ nseuseng ]
 description: Practice Plugin
-website: nseu.org
 commands:
   대전:
-    description: 대전 명령어
+    description:
   파티:
-    description: 파티 명령어
-
+    description:
+  관전:
+    description:
+  아레나:
+    description:
