@@ -5,8 +5,10 @@ import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.nseu.practice.command.Command;
 import org.nseu.practice.core.gamemode.CPVP;
+import org.nseu.practice.core.inventory.InventoryHandler;
 import org.nseu.practice.core.menu.MatchMenu;
 import org.nseu.practice.listener.EventListener;
+import org.nseu.practice.storage.FileManager;
 
 public final class Main extends JavaPlugin {
 
@@ -21,6 +23,7 @@ public final class Main extends JavaPlugin {
         // Plugin startup logic
 
         instance = this;
+        FileManager.load();
         EventListener.registerThis(instance);
         getCommand("대전").setExecutor(new Command());
         getCommand("파티").setExecutor(new Command());
@@ -28,12 +31,15 @@ public final class Main extends JavaPlugin {
         getCommand("아레나").setExecutor(new Command());
         MatchMenu.start();
         CPVP.setup();
+        InventoryHandler.setup();
+
     }
 
     public static Location spawn = new Location(Bukkit.getWorld("world"), 0, 0, 0);
 
     @Override
     public void onDisable() {
+        FileManager.save();
         // Plugin shutdown logic
     }
 }

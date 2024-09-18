@@ -2,6 +2,7 @@ package org.nseu.practice.listener;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -9,6 +10,7 @@ import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.*;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -19,8 +21,11 @@ import org.nseu.practice.core.Party;
 import org.nseu.practice.core.Team;
 import org.nseu.practice.core.Perform;
 import org.nseu.practice.core.gamemode.CPVP;
+import org.nseu.practice.core.gamemode.GameMode;
+import org.nseu.practice.core.inventory.InventoryHandler;
 import org.nseu.practice.core.match.Session;
 import org.nseu.practice.core.player.PracticePlayer;
+import org.nseu.practice.core.queue.PracticeQueue;
 import org.nseu.practice.util.InventoryGUIHolder;
 import org.nseu.practice.util.Message;
 import org.nseu.practice.util.nameutil;
@@ -44,35 +49,62 @@ public class EventListener implements Listener {
         }
 
         Inventory inv = e.getClickedInventory();
-        InventoryGUIHolder holder = (InventoryGUIHolder) inv.getHolder();
-        if(inv == null) {
-            return;
-        }
-        String Type = holder.getType();
-        switch (Type) {
-            case "kit_configure_inv" -> {
-                int slot1 = e.getSlot();
+        if(inv.getHolder() instanceof InventoryGUIHolder holder) {
+            String Type = holder.getType();
+            switch (Type) {
+                case "kit_configure_inv" -> {
+                    int slot1 = e.getSlot();
 
-                if(slot1 == 52) {
-                    p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-                }
-            }
-            case "duels_menu_unranked" -> {
-                int slot1 = e.getSlot();
-                if(slot1 == 0) {
-                    if(PracticePlayer.getPlayer(p.getUniqueId()).getStatus() == PracticePlayer.Status.IS_IDLE) {
-                        ArrayList<UUID> list = new ArrayList<>();
-                        list.add(p.getUniqueId());
-                        CPVP.getUnRankedQueue().add(new Team(list));
-                        Message.sendMessage(p.getUniqueId(), "CPVP 대전에 대기합니다");
-                    } else {
-                        Message.sendMessage(p.getUniqueId(), "이미 다른 대전에 대기중입니다");
+                    if (slot1 == 52) {
+                        p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
                     }
-                    p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+                }
+                case "duels_menu_unranked" -> {
+                    int slot1 = e.getSlot();
+                    if (slot1 == 0) {
+                        if (PracticePlayer.getPlayer(p.getUniqueId()).getStatus() == PracticePlayer.Status.IS_IDLE) {
+                            ArrayList<UUID> list = new ArrayList<>();
+                            list.add(p.getUniqueId());
+                            CPVP.getUnRankedQueue().add(new Team(list));
+                            Message.sendMessage(p.getUniqueId(), "CPVP 대전에 대기합니다");
+                            p.getInventory().setContents(InventoryHandler.getQueueInventory().getContents());
+                        } else {
+                            Message.sendMessage(p.getUniqueId(), "이미 다른 대전에 대기중입니다");
+                        }
+                        p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+                    }
+                }
+                default -> {
+                    e.setCancelled(true);
                 }
             }
-            default -> {
-                e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onItemClick(PlayerInteractEvent e) {
+        Player p  = e.getPlayer();
+        PracticePlayer practicePlayer = PracticePlayer.getPlayer(p.getUniqueId());
+        if(practicePlayer.getStatus() == PracticePlayer.Status.IS_IDLE) {
+            e.setCancelled(true);
+            if(!e.getAction().isRightClick()) {
+                return;
+            }
+            Material Type = e.getMaterial();
+            if(Type.equals(Material.IRON_SWORD)) {
+                Perform.openMenu(p);
+            } else if (Type.equals(Material.DIAMOND_SWORD)) {
+                // comming soon
+            }
+
+        } else if(practicePlayer.getStatus() == PracticePlayer.Status.IS_QUEUING) {
+            e.setCancelled(true);
+            if(!e.getAction().isRightClick()) {
+                return;
+            }
+            Material Type = e.getMaterial();
+            if(Type.equals(Material.RED_DYE)) {
+                Perform.cancelQueue(p);
             }
         }
     }
@@ -147,6 +179,8 @@ public class EventListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         PracticePlayer.register(e.getPlayer().getUniqueId());
+        e.getPlayer().getInventory().clear();
+        e.getPlayer().getInventory().setContents(InventoryHandler.getMenuInventory().getContents());
     }
 
     @EventHandler
@@ -154,6 +188,9 @@ public class EventListener implements Listener {
         UUID uuid = e.getPlayer().getUniqueId();
         PracticePlayer practicePlayer = PracticePlayer.getPlayer(uuid);
         Session session = Session.getSession(uuid);
+        if(practicePlayer.getStatus() == PracticePlayer.Status.IS_QUEUING) {
+            Perform.cancelQueue(e.getPlayer());
+        }
         if(session != null) {
             session.recordInventory(uuid, e.getPlayer().getHealth(), e.getPlayer().getSaturation(), e.getPlayer().getInventory());
             String leaveMessage = nameutil.name(uuid) + " 이가 서버에서 나갔습니다";

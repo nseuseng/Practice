@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.nseu.practice.core.Party;
 import org.nseu.practice.core.Team;
 
@@ -27,6 +28,10 @@ public class Message {
         if(Bukkit.getOfflinePlayer(uuid).isOnline()) {
             Bukkit.getPlayer(uuid).sendMessage(Component.text(c(Message)));
         }
+    }
+
+    public static void sendMessage(Player p, String Message) {
+        p.sendMessage(Component.text(c(Message)));
     }
 
     public static Component clickableMessage(String message, String command) {

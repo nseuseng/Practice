@@ -4,6 +4,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.nseu.practice.arena.Arena;
+import org.nseu.practice.command.subcommands.ArenaCommands;
 import org.nseu.practice.core.Perform;
 import org.nseu.practice.core.match.MatchInventory;
 import org.nseu.practice.core.match.MatchRecord;
@@ -35,9 +37,7 @@ public class Command implements CommandExecutor {
             }
             case "아레나" -> {
                 //do something ig
-                if(args[0].equalsIgnoreCase("생성")) {
-
-                }
+                ArenaCommands.onCommand(p, args);
                 break;
             }
         }

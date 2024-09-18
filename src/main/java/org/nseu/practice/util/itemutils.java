@@ -14,7 +14,7 @@ public class itemutils {
     public static ItemStack createItem(String Name, Material material) {
         ItemStack item = new ItemStack(material, 1);
         ItemMeta itemMeta = item.getItemMeta();
-        itemMeta.displayName(Component.text(Name));
+        itemMeta.displayName(Component.text(Message.c(Name)));
         item.setItemMeta(itemMeta);
         return item;
     }
@@ -23,7 +23,7 @@ public class itemutils {
         ItemMeta meta = item.getItemMeta();
         List<Component> list = new ArrayList<>();
         lore.forEach(s -> {
-            list.add(Component.text(s));
+            list.add(Component.text(Message.c(s)));
         });
         meta.lore(list);
         item.setItemMeta(meta);

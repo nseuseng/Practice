@@ -25,12 +25,13 @@ public class CPVP {
         return UnRanked;
     }
 
-    private static HashMap<Arena, Boolean> isLocked = new HashMap<>();
+    private static HashMap<String, Boolean> isLocked = new HashMap<>();
 
     public static Arena selectArenaAndLock() {
-        for(Arena arena : isLocked.keySet()) {
-            if(!isLocked.get(arena)) {
-                isLocked.put(arena, true);
+        for(String arenaName : isLocked.keySet()) {
+            if(!isLocked.get(arenaName)) {
+                isLocked.put(arenaName, true);
+                Arena arena = Arena.getArenaByName(arenaName);
                 arena.lock();
                 return arena;
             }
@@ -38,16 +39,16 @@ public class CPVP {
         return null;
     }
 
-    public static void unlockArena(Arena arena) {
-        isLocked.put(arena, false);
-        arena.unlock();
+    public static void unlockArena(String arenaName) {
+        isLocked.put(arenaName, false);
+        Arena.getArenaByName(arenaName).unlock();
     }
 
     public static List<Arena> getActiveArenas() {
         List<Arena> list = new ArrayList<>();
         isLocked.forEach((k, v) -> {
             if(v) {
-               list.add(k);
+               list.add(Arena.getArenaByName(k));
             }
         });
         return list;

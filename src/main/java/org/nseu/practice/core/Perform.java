@@ -7,10 +7,12 @@ import org.nseu.practice.Main;
 import org.nseu.practice.arena.Arena;
 import org.nseu.practice.core.gamemode.CPVP;
 import org.nseu.practice.core.gamemode.GameMode;
+import org.nseu.practice.core.inventory.InventoryHandler;
 import org.nseu.practice.core.match.Session;
 import org.nseu.practice.core.menu.MatchMenu;
 import org.nseu.practice.core.player.PracticePlayer;
 import org.nseu.practice.core.player.Stats;
+import org.nseu.practice.core.queue.PracticeQueue;
 import org.nseu.practice.util.*;
 
 import java.util.UUID;
@@ -146,7 +148,7 @@ public class Perform {
                             TeamUtils.setTeamStatus(loser, PracticePlayer.Status.IS_IDLE);
                             Arena arena = session.getArena();
                             Session.destroySession(session);
-                            CPVP.unlockArena(arena);
+                            CPVP.unlockArena(arena.getArenaName());
                         }
                     }.runTaskLater(Main.getInstance(), 100L);
 
@@ -161,5 +163,17 @@ public class Perform {
 
     public static void openMenu(Player p) {
         p.openInventory(MatchMenu.getMenu());
+    }
+
+    public static void cancelQueue(Player p) {
+        UUID uuid = p.getUniqueId();
+        PracticeQueue practiceQueue = PracticeQueue.getQueue(uuid);
+        PracticeQueue.cancelQueue(uuid);
+        Message.sendMessage(uuid, practiceQueue.getGameMode().name() + " 대기줄에서 나갔습니다");
+        PracticePlayer practicePlayer = PracticePlayer.getPlayer(uuid);
+        if(practicePlayer != null) {
+            practicePlayer.setStatus(PracticePlayer.Status.IS_IDLE);
+            p.getInventory().setContents(InventoryHandler.getMenuInventory().getContents());
+        }
     }
 }

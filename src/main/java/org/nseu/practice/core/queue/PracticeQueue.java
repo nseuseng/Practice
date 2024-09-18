@@ -10,6 +10,7 @@ import org.nseu.practice.util.TeamUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
 
 public class PracticeQueue {
 
@@ -55,6 +56,9 @@ public class PracticeQueue {
 
     public void add(Team team) {
         TeamUtils.setTeamStatus(team, PracticePlayer.Status.IS_QUEUING);
+        team.getMembers().forEach(uuid -> {
+            QueueStatus(uuid, this);
+        });
         if(isRanked) {
             time_in_ticks.put(team, Bukkit.getCurrentTick());
             queue.add(team);
@@ -67,4 +71,42 @@ public class PracticeQueue {
             }
         }
     }
+
+    private static HashMap<UUID, PracticeQueue> queueStatus = new HashMap<>();
+
+    public static void QueueStatus(UUID uuid, PracticeQueue practiceQueue) {
+        queueStatus.put(uuid, practiceQueue);
+    }
+
+    public GameMode getGameMode() {
+        return this.gameMode;
+    }
+
+    public boolean isRanked() {
+        return this.isRanked;
+    }
+
+    public int getParty_size() {
+        return party_size;
+    }
+
+    public static void cancelQueue(UUID uuid) {
+        Team team1 = null;
+        for(Team team : queueStatus.get(uuid).queue) {
+            if(team.contains(uuid)) {
+                team1 = team;
+            }
+        }
+        if(team1 != null) {
+            queueStatus.get(uuid).queue.remove(team1);
+            queueStatus.get(uuid).time_in_ticks.remove(team1);
+            queueStatus.remove(uuid);
+        }
+    }
+
+    public static PracticeQueue getQueue(UUID uuid) {
+        return queueStatus.get(uuid);
+    }
+
+
 }
