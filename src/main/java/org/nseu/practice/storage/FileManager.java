@@ -1,6 +1,8 @@
 package org.nseu.practice.storage;
 
 import org.nseu.practice.arena.Arena;
+import org.nseu.practice.core.kits.DefaultKits;
+import org.nseu.practice.core.kits.KitStorage;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -17,6 +19,8 @@ public class FileManager {
         CreateFile(PATH);
         DumpYaml(Arena.data(), "Arenas");
         DumpYaml(data, "Main");
+        DumpYaml(KitStorage.GetKitConfigs(), "KitConfig");
+        DumpYaml(DefaultKits.GetDefaultKits(), "DefaultKits");
     }
 
     private static HashMap<String, String> data = new HashMap<>();
@@ -31,6 +35,16 @@ public class FileManager {
         HashMap<String, String> datatempfile = (HashMap<String, String>) LoadYaml("Main");
         if(datatempfile != null) {
             data = datatempfile;
+        }
+        HashMap<String, HashMap<String, HashMap<String, String>>> kitconfigtempfile = new HashMap<>();
+        kitconfigtempfile = (HashMap<String, HashMap<String, HashMap<String, String>>>) LoadYaml("KitConfig");
+        if(kitconfigtempfile != null) {
+            KitStorage.LoadKitConfigs(kitconfigtempfile);
+        }
+        HashMap<String, String> defaultkitstempfile = new HashMap<>();
+        defaultkitstempfile = (HashMap<String, String>) LoadYaml("DefaultKits");
+        if (defaultkitstempfile != null) {
+            DefaultKits.LoadDefaultKits(defaultkitstempfile);
         }
     }
 

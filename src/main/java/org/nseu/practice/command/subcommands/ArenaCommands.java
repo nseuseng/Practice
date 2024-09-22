@@ -66,6 +66,7 @@ public class ArenaCommands {
 
                 if(Arena.getArenaByName(arenaName)==null) {
                     Message.sendMessage(p.getUniqueId(), "&c&lERROR &r&7아레나 " + arenaName + "은는 존재하지 않습니다");
+                    return;
                 }
                 switch (gameMode.toLowerCase()) {
                     case "cpvp" -> {

@@ -52,7 +52,7 @@ public class PracticePlayer {
     }
 
     public void unhideFromAll() {
-
+        hiddenFrom.forEach(p -> PracticePlayer.getPlayer(p).unhidePlayer(Bukkit.getPlayer(this.uuid)));
     }
 
     private void removeHiddenFrom(UUID uuid) {

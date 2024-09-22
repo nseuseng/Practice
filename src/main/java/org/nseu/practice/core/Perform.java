@@ -9,6 +9,7 @@ import org.nseu.practice.arena.Arena;
 import org.nseu.practice.core.gamemode.CPVP;
 import org.nseu.practice.core.gamemode.GameMode;
 import org.nseu.practice.core.inventory.InventoryHandler;
+import org.nseu.practice.core.kits.DefaultKits;
 import org.nseu.practice.core.match.Session;
 import org.nseu.practice.core.menu.MatchMenu;
 import org.nseu.practice.core.player.PracticePlayer;
@@ -16,6 +17,7 @@ import org.nseu.practice.core.player.Stats;
 import org.nseu.practice.core.queue.PracticeQueue;
 import org.nseu.practice.util.*;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class Perform {
@@ -49,11 +51,19 @@ public class Perform {
                         return;
                     }
 
+
                     Session.createSession(randomTeam, team, arena, isRanked, gameMode, size);
                     //telelport
 
                     TeamUtils.teleportTeam(randomTeam, arena.getTeam1loc());
                     TeamUtils.teleportTeam(team, arena.getTeam2loc());
+
+                    randomTeam.getMembers().forEach(member -> {
+                        DefaultKits.loadDefaultkit(Objects.requireNonNull(Bukkit.getPlayer(member)), gameMode.name());
+                    });
+                    team.getMembers().forEach(member -> {
+                        DefaultKits.loadDefaultkit(Objects.requireNonNull(Bukkit.getPlayer(member)), gameMode.name());
+                    });
 
                     TeamUtils.setTeamStatus(randomTeam, PracticePlayer.Status.IS_IN_MATCH_COOLDOWN);
                     TeamUtils.setTeamStatus(team, PracticePlayer.Status.IS_IN_MATCH_COOLDOWN);
@@ -79,6 +89,16 @@ public class Perform {
                     Message.sendMessage(team, msg2);
 
 
+                    randomTeam.getMembers().forEach(member -> {
+                        Player p = Bukkit.getPlayer(member);
+                        System.out.println(p.getName() + " " + gameMode.name());
+                        DefaultKits.loadDefaultkit(p, gameMode.name());
+                    });
+                    team.getMembers().forEach(member -> {
+                        Player p = Bukkit.getPlayer(member);
+                        System.out.println(p.getName() + " " + gameMode.name());
+                        DefaultKits.loadDefaultkit(p, gameMode.name());
+                    });
                     //3 second invincible
 
                     new BukkitRunnable() {
@@ -144,6 +164,7 @@ public class Perform {
                         public void run() {
                             TeamUtils.teleportTeam(winner, Main.spawn);
                             TeamUtils.teleportTeam(loser, Main.spawn);
+                            session.unHideAll();
                             TeamUtils.setTeamStatus(winner, PracticePlayer.Status.IS_IDLE);
                             TeamUtils.setTeamStatus(loser, PracticePlayer.Status.IS_IDLE);
                             Arena arena = session.getArena();

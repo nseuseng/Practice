@@ -2,6 +2,7 @@ package org.nseu.practice.listener;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -205,6 +206,7 @@ public class EventListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         PracticePlayer.register(e.getPlayer().getUniqueId());
+        e.getPlayer().setGameMode(GameMode.SURVIVAL);
         e.getPlayer().getInventory().clear();
         e.getPlayer().getInventory().setContents(InventoryHandler.getMenuInventory().getContents());
     }
@@ -217,16 +219,6 @@ public class EventListener implements Listener {
         if(practicePlayer.getStatus() == PracticePlayer.Status.IS_QUEUING) {
             Perform.cancelQueue(e.getPlayer());
         }
-        if(session != null) {
-            session.recordInventory(uuid, e.getPlayer().getHealth(), e.getPlayer().getSaturation(), e.getPlayer().getInventory());
-            String leaveMessage = nameutil.name(uuid) + " 이가 서버에서 나갔습니다";
-            Message.sendMessage(session.getTeam1(), leaveMessage);
-            Message.sendMessage(session.getTeam2(), leaveMessage);
-            session.midPlayerLeave(uuid);
-            PracticePlayer.destroy(uuid);
-        } else {
-            PracticePlayer.destroy(uuid);
-        }
         if(Party.isInParty(uuid)) {
             Party party = Party.getParty(uuid);
             if(party.getLeader().equals(uuid)) {
@@ -235,6 +227,21 @@ public class EventListener implements Listener {
                 party.leave(uuid);
             }
         }
+        if(session != null) {
+            session.recordInventory(uuid, e.getPlayer().getHealth(), e.getPlayer().getSaturation(), e.getPlayer().getInventory());
+            String leaveMessage = nameutil.name(uuid) + " 이가 서버에서 나갔습니다";
+            Message.sendMessage(session.getTeam1(), leaveMessage);
+            Message.sendMessage(session.getTeam2(), leaveMessage);
+            session.midPlayerLeave(uuid);
+            practicePlayer.setStatus(PracticePlayer.Status.IS_SPECTATING);
+            boolean alldown = session.getTeam(uuid).isAllNotPlaying();
+            boolean result = !session.getTeam1().contains(uuid);
+            if(alldown) {
+                Perform.endMatch(session, result);
+            }
+        }
+        PracticePlayer.destroy(uuid);
+
     }
 
     @EventHandler
@@ -292,10 +299,10 @@ public class EventListener implements Listener {
 
             boolean alldown = session.getTeam(p.getUniqueId()).isAllNotPlaying();
             boolean result = !session.getTeam1().contains(p.getUniqueId());
+            Perform.spectate(p, session);
             if(alldown) {
                 Perform.endMatch(session, result);
             }
-            Perform.spectate(p, session);
             new BukkitRunnable() {
                 @Override
                 public void run() {

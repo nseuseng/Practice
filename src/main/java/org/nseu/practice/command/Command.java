@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.nseu.practice.arena.Arena;
 import org.nseu.practice.command.subcommands.ArenaCommands;
+import org.nseu.practice.command.subcommands.KitCommands;
 import org.nseu.practice.core.Perform;
 import org.nseu.practice.core.match.MatchInventory;
 import org.nseu.practice.core.match.MatchRecord;
@@ -37,8 +38,15 @@ public class Command implements CommandExecutor {
             }
             case "아레나" -> {
                 //do something ig
-                ArenaCommands.onCommand(p, args);
+                if(p.hasPermission("practice.admin")) {
+                    ArenaCommands.onCommand(p, args);
+                }
                 break;
+            }
+            case "킷" -> {
+                if(p.hasPermission("practice.admin")) {
+                    KitCommands.onCommand(p, args);
+                }
             }
         }
 

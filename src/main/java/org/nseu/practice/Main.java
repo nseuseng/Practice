@@ -31,6 +31,7 @@ public final class Main extends JavaPlugin {
         getCommand("파티").setExecutor(new Command());
         getCommand("관전").setExecutor(new Command());
         getCommand("아레나").setExecutor(new Command());
+        getCommand("킷").setExecutor(new Command());
         MatchMenu.start();
         CPVP.setup();
         InventoryHandler.setup();

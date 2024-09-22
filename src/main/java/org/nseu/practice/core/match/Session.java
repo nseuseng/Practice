@@ -1,7 +1,9 @@
 package org.nseu.practice.core.match;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -9,6 +11,7 @@ import org.nseu.practice.arena.Arena;
 import org.nseu.practice.core.Perform;
 import org.nseu.practice.core.Team;
 import org.nseu.practice.core.gamemode.GameMode;
+import org.nseu.practice.core.player.PracticePlayer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +42,18 @@ public class Session {
         this.size = size;
         this.sessionID = UUID.randomUUID();
         this.matchRecord = new MatchRecord(this.sessionID, this.team1, this.team2);
+    }
+
+    public void unHideAll() {
+        spectators.forEach(s -> {
+
+            OfflinePlayer op = Bukkit.getOfflinePlayer(s);
+            if(op.isOnline()) {
+                Perform.stopSpectating(op.getPlayer());
+                PracticePlayer.getPlayer(op.getUniqueId()).unhideFromAll();
+                PracticePlayer.getPlayer(op.getUniqueId()).unhideAll();
+            }
+        });
     }
 
     public ArrayList<UUID> getSpectators() {
