@@ -1,4 +1,4 @@
-name: practice
+name: PracticeCore
 version: '1.0-SNAPSHOT'
 main: org.nseu.practice.Main
 api-version: '1.21.1'

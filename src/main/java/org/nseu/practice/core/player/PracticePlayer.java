@@ -1,8 +1,13 @@
 package org.nseu.practice.core.player;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.nseu.practice.Main;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,6 +32,41 @@ public class PracticePlayer {
         return this.status;
     }
 
+    private ArrayList<UUID> hiddenFrom = new ArrayList<>();
+    private ArrayList<UUID> hidden = new ArrayList<>();
+
+    public void hidePlayer(Player p) {
+        this.hidden.add(p.getUniqueId());
+        PracticePlayer.getPlayer(p.getUniqueId()).addHiddenFrom(this.uuid);
+        Bukkit.getPlayer(this.uuid).hidePlayer(Main.getInstance(), p);
+    }
+
+    public void unhidePlayer(Player p) {
+        this.hidden.remove(p.getUniqueId());
+        PracticePlayer.getPlayer(p.getUniqueId()).removeHiddenFrom(this.uuid);
+        Bukkit.getPlayer(this.uuid).showPlayer(Main.getInstance(), p);
+    }
+
+    public void unhideAll() {
+        hidden.forEach(p -> unhidePlayer(Objects.requireNonNull(Bukkit.getPlayer(p))));
+    }
+
+    public void unhideFromAll() {
+
+    }
+
+    private void removeHiddenFrom(UUID uuid) {
+        hiddenFrom.remove(uuid);
+    }
+
+    private void addHiddenFrom(UUID uuid) {
+        hiddenFrom.add(uuid);
+    }
+
+    public void onLeave() {
+
+    }
+
     private static ConcurrentHashMap<UUID, PracticePlayer> PlayerMap = new ConcurrentHashMap<>();
     private static final Object Lock = new Object();
 
@@ -38,6 +78,7 @@ public class PracticePlayer {
 
     public static void destroy(UUID uuid) {
         synchronized (Lock) {
+            PlayerMap.get(uuid).onLeave();
             PlayerMap.remove(uuid);
         }
     }

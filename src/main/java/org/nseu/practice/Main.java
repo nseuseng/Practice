@@ -9,6 +9,7 @@ import org.nseu.practice.core.inventory.InventoryHandler;
 import org.nseu.practice.core.menu.MatchMenu;
 import org.nseu.practice.listener.EventListener;
 import org.nseu.practice.storage.FileManager;
+import org.nseu.practice.util.Util;
 
 public final class Main extends JavaPlugin {
 
@@ -24,6 +25,7 @@ public final class Main extends JavaPlugin {
 
         instance = this;
         FileManager.load();
+        Main.spawn = Util.Loc.fromString(FileManager.getData("spawn"));
         EventListener.registerThis(instance);
         getCommand("대전").setExecutor(new Command());
         getCommand("파티").setExecutor(new Command());

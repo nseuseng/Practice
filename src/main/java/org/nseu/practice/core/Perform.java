@@ -1,6 +1,7 @@
 package org.nseu.practice.core;
 
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.nseu.practice.Main;
@@ -129,7 +130,6 @@ public class Perform {
                         winner = session.getTeam2();
                         loser = session.getTeam1();
                     }
-                    session.recordInventoryToMatchRecord();
                     UUID sessionid = session.getSessionID();
                     Component winner_inv = Message.clickableMessage(" 승리! - " + nameutil.name(winner.getMembers().getFirst()) + " : [인벤토리 확인]\n", "/대전 _ " + sessionid.toString() + winner.getMembers().getFirst().toString());
                     Component loser_inv = Message.clickableMessage(" 패배! - " + nameutil.name(loser.getMembers().getFirst()) + " : [인벤토리 확인]\n", "/대전 _ " + sessionid.toString() + loser.getMembers().getFirst().toString());
@@ -147,6 +147,7 @@ public class Perform {
                             TeamUtils.setTeamStatus(winner, PracticePlayer.Status.IS_IDLE);
                             TeamUtils.setTeamStatus(loser, PracticePlayer.Status.IS_IDLE);
                             Arena arena = session.getArena();
+                            session.revertWorld();
                             Session.destroySession(session);
                             CPVP.unlockArena(arena.getArenaName());
                         }
@@ -175,5 +176,31 @@ public class Perform {
             practicePlayer.setStatus(PracticePlayer.Status.IS_IDLE);
             p.getInventory().setContents(InventoryHandler.getMenuInventory().getContents());
         }
+    }
+
+    public static void startSpectatng(Player p, boolean changeStatus) {
+
+        p.setGameMode(org.bukkit.GameMode.CREATIVE);
+
+    }
+
+    public static void stopSpectating(Player p) {
+        PracticePlayer.getPlayer(p.getUniqueId()).setStatus(PracticePlayer.Status.IS_IDLE);
+        p.teleport(Main.spawn);
+        Bukkit.getOnlinePlayers().forEach(user -> user.showPlayer(Main.getInstance(), p));
+        p.setGameMode(org.bukkit.GameMode.SURVIVAL);
+    }
+
+    public static void spectate(Player p, Session session) {
+        session.addSpectator(p.getUniqueId());
+        p.teleport(session.getArena().spectate());
+        p.setGameMode(org.bukkit.GameMode.CREATIVE);
+        p.getInventory().setContents(InventoryHandler.getSpecInventory().getContents());
+        PracticePlayer.getPlayer(p.getUniqueId()).unhideAll();
+        session.getAllPlayers().forEach(uuid -> {
+            if(PracticePlayer.getPlayer(uuid).getStatus() == PracticePlayer.Status.IS_PLAYING) {
+                PracticePlayer.getPlayer(uuid).hidePlayer(p);
+            }
+        });
     }
 }

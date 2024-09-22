@@ -2,6 +2,7 @@ package org.nseu.practice.listener;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,22 +11,18 @@ import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.*;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.nseu.practice.Main;
 import org.nseu.practice.arena.Arena;
 import org.nseu.practice.core.Party;
 import org.nseu.practice.core.Team;
 import org.nseu.practice.core.Perform;
 import org.nseu.practice.core.gamemode.CPVP;
-import org.nseu.practice.core.gamemode.GameMode;
 import org.nseu.practice.core.inventory.InventoryHandler;
 import org.nseu.practice.core.match.Session;
 import org.nseu.practice.core.player.PracticePlayer;
-import org.nseu.practice.core.queue.PracticeQueue;
 import org.nseu.practice.util.InventoryGUIHolder;
 import org.nseu.practice.util.Message;
 import org.nseu.practice.util.nameutil;
@@ -49,7 +46,7 @@ public class EventListener implements Listener {
         }
 
         Inventory inv = e.getClickedInventory();
-        if(inv.getHolder() instanceof InventoryGUIHolder holder) {
+        if(inv != null && inv.getHolder() instanceof InventoryGUIHolder holder) {
             String Type = holder.getType();
             switch (Type) {
                 case "kit_configure_inv" -> {
@@ -85,26 +82,39 @@ public class EventListener implements Listener {
     public void onItemClick(PlayerInteractEvent e) {
         Player p  = e.getPlayer();
         PracticePlayer practicePlayer = PracticePlayer.getPlayer(p.getUniqueId());
-        if(practicePlayer.getStatus() == PracticePlayer.Status.IS_IDLE) {
-            e.setCancelled(true);
-            if(!e.getAction().isRightClick()) {
-                return;
-            }
-            Material Type = e.getMaterial();
-            if(Type.equals(Material.IRON_SWORD)) {
-                Perform.openMenu(p);
-            } else if (Type.equals(Material.DIAMOND_SWORD)) {
-                // comming soon
-            }
 
-        } else if(practicePlayer.getStatus() == PracticePlayer.Status.IS_QUEUING) {
-            e.setCancelled(true);
-            if(!e.getAction().isRightClick()) {
-                return;
+        switch (practicePlayer.getStatus()) {
+            case IS_IDLE -> {
+                e.setCancelled(true);
+                if(!e.getAction().isRightClick()) {
+                    return;
+                }
+                Material Type = e.getMaterial();
+                if(Type.equals(Material.IRON_SWORD)) {
+                    Perform.openMenu(p);
+                } else if (Type.equals(Material.DIAMOND_SWORD)) {
+                    // comming soon
+                }
             }
-            Material Type = e.getMaterial();
-            if(Type.equals(Material.RED_DYE)) {
-                Perform.cancelQueue(p);
+            case IS_QUEUING -> {
+                e.setCancelled(true);
+                if(!e.getAction().isRightClick()) {
+                    return;
+                }
+                Material Type = e.getMaterial();
+                if(Type.equals(Material.RED_DYE)) {
+                    Perform.cancelQueue(p);
+                }
+            }
+            case IS_SPECTATING -> {
+                e.setCancelled(true);
+                if(!e.getAction().isRightClick()) {
+                    return;
+                }
+                Material Type = e.getMaterial();
+                if(Type.equals(Material.RED_DYE)) {
+                    Perform.stopSpectating(p);
+                }
             }
         }
     }
@@ -167,6 +177,22 @@ public class EventListener implements Listener {
     }
 
     @EventHandler
+    public void onDropItem(PlayerDropItemEvent e) {
+        PracticePlayer practicePlayer = PracticePlayer.getPlayer(e.getPlayer().getUniqueId());
+        switch (practicePlayer.getStatus()) {
+            case IS_IDLE, IS_SPECTATING, IS_IN_MATCH_COOLDOWN, IS_QUEUING -> {
+                e.setCancelled(true);
+            }
+            case IS_EDITING_KIT -> {
+                e.getItemDrop().remove();
+            }
+            case IS_IN_FFA, IS_PLAYING -> {
+                //
+            }
+        }
+    }
+
+    @EventHandler
     public void onInventoryClose(InventoryCloseEvent e) {
         if(e.getReason().equals(InventoryCloseEvent.Reason.PLUGIN)) {
            return;
@@ -187,7 +213,7 @@ public class EventListener implements Listener {
     public void onLeave(PlayerQuitEvent e) {
         UUID uuid = e.getPlayer().getUniqueId();
         PracticePlayer practicePlayer = PracticePlayer.getPlayer(uuid);
-        Session session = Session.getSession(uuid);
+        Session session = Session.currentlyPlaying(uuid);
         if(practicePlayer.getStatus() == PracticePlayer.Status.IS_QUEUING) {
             Perform.cancelQueue(e.getPlayer());
         }
@@ -234,7 +260,7 @@ public class EventListener implements Listener {
         Arena arena = Arena.getArena(e.getBlock().getLocation());
         if(arena != null && arena.isUsed()) {
 
-            Session.getSession(arena).record(e.getBlock().getLocation(), e.getBlock().getBlockData());
+            Session.currentlyPlaying(arena).record(e.getBlock().getLocation(), e.getBlock().getBlockData());
         }
     }
 
@@ -242,8 +268,9 @@ public class EventListener implements Listener {
     public void onDeath(PlayerDeathEvent e) {
         Player p = e.getPlayer();
 
+        Location loc = p.getLocation();
         if(PracticePlayer.getPlayer(p.getUniqueId()).getStatus() == PracticePlayer.Status.IS_PLAYING) {
-            Session session = Session.getSession(p.getUniqueId());
+            Session session = Session.currentlyPlaying(p.getUniqueId());
             session.recordInventory(p.getUniqueId(), e.getPlayer().getHealth(), e.getPlayer().getSaturation(), p.getInventory());
             PracticePlayer.getPlayer(p.getUniqueId()).setStatus(PracticePlayer.Status.IS_SPECTATING);
 
@@ -268,7 +295,15 @@ public class EventListener implements Listener {
             if(alldown) {
                 Perform.endMatch(session, result);
             }
+            Perform.spectate(p, session);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    p.spigot().respawn();
+                    p.teleport(loc);
 
+                }
+            }.runTaskLater(Main.getInstance(), 1L);
         }
     }
 

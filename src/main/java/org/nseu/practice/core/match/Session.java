@@ -1,14 +1,18 @@
 package org.nseu.practice.core.match;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.nseu.practice.arena.Arena;
 import org.nseu.practice.core.Perform;
 import org.nseu.practice.core.Team;
 import org.nseu.practice.core.gamemode.GameMode;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class Session {
@@ -22,6 +26,9 @@ public class Session {
     private boolean isRanked;
     private int size;
     private final UUID sessionID;
+    private MatchRecord matchRecord;
+
+    private ArrayList<UUID> spectators = new ArrayList<>();
 
     public Session(Team team1, Team team2, Arena arena, boolean isRanked, GameMode gameMode, int size) {
         this.team1 = team1;
@@ -31,6 +38,19 @@ public class Session {
         this.isRanked = isRanked;
         this.size = size;
         this.sessionID = UUID.randomUUID();
+        this.matchRecord = new MatchRecord(this.sessionID, this.team1, this.team2);
+    }
+
+    public ArrayList<UUID> getSpectators() {
+        return spectators;
+    }
+
+    public void addSpectator(UUID uuid) {
+        spectators.add(uuid);
+    }
+
+    public void removeSpectator(UUID uuid) {
+        spectators.remove(uuid);
     }
 
     public static void createSession(Team randomTeam, Team team, Arena arena, boolean isRanked, GameMode gameMode, int size) {
@@ -44,7 +64,7 @@ public class Session {
         });
     }
 
-    public static Session getSession(UUID uuid) {
+    public static Session currentlyPlaying(UUID uuid) {
         return sessions3.get(uuid);
     }
 
@@ -69,7 +89,7 @@ public class Session {
     }
 
 
-    public static Session getSession(Arena arena) {
+    public static Session currentlyPlaying(Arena arena) {
         return sessions2.getOrDefault(arena, null);
     }
 
@@ -109,21 +129,15 @@ public class Session {
         });
     }
 
-    public void recordInventoryToMatchRecord() {
-        minvs.forEach((k, v) -> {
-            MatchRecord.setMatchInventory(this.sessionID, k, v);
-        });
-    }
-
     public GameMode getGameMode() {
         return gameMode;
     }
 
-    private HashMap<UUID, MatchInventory> minvs = new HashMap<>();
+
 
     public void recordInventory(UUID uniqueId, double health, double hunger, PlayerInventory inventory) {
-        MatchInventory minv = new MatchInventory(uniqueId, health, hunger, inventory.getHelmet(), inventory.getChestplate(), inventory.getLeggings(), inventory.getBoots(), inventory.getItemInOffHand(), inventory.getContents());
-        minvs.put(uniqueId, minv);
+        MatchInventory minv = new MatchInventory(uniqueId, health, hunger, inventory.getHelmet() != null ? inventory.getHelmet() : new ItemStack(Material.AIR), inventory.getChestplate() != null ? inventory.getChestplate() : new ItemStack(Material.AIR), inventory.getLeggings() != null ? inventory.getLeggings() : new ItemStack(Material.AIR), inventory.getBoots() != null ? inventory.getBoots() : new ItemStack(Material.AIR), inventory.getItemInOffHand() != null ? inventory.getItemInOffHand() : new ItemStack(Material.AIR), inventory.getContents());
+        matchRecord.recordInventory(uniqueId, minv);
     }
 
     public UUID getSessionID() {
@@ -141,5 +155,11 @@ public class Session {
         if(alldown) {
             Perform.endMatch(this, result);
         }
+    }
+
+    public List<UUID> getAllPlayers() {
+        List<UUID> list = team1.getMembers();
+        list.addAll(team2.getMembers());
+        return list;
     }
 }

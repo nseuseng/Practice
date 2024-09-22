@@ -42,7 +42,7 @@ public class MatchMenu {
     public static int size(List<Arena> activeArenas) {
         int i = 0;
         for(Arena arena : activeArenas) {
-            Session session = Session.getSession(arena);
+            Session session = Session.currentlyPlaying(arena);
             i = i + session.getTeam1().getMembers().size() + session.getTeam2().getMembers().size();
         }
         return i;

@@ -16,7 +16,10 @@ public class FileManager {
     public static void save() {
         CreateFile(PATH);
         DumpYaml(Arena.data(), "Arenas");
+        DumpYaml(data, "Main");
     }
+
+    private static HashMap<String, String> data = new HashMap<>();
 
     public static void load() {
         CreateFile(PATH);
@@ -24,6 +27,10 @@ public class FileManager {
         arenatempfile = (HashMap<String, HashMap<String, String>>) LoadYaml("Arenas");
         if(arenatempfile != null) {
             Arena.load(arenatempfile);
+        }
+        HashMap<String, String> datatempfile = (HashMap<String, String>) LoadYaml("Main");
+        if(datatempfile != null) {
+            data = datatempfile;
         }
     }
 
@@ -62,5 +69,13 @@ public class FileManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static String getData(String key) {
+        return data.get(key);
+    }
+
+    public static void setData(String key, String string) {
+        data.put(key, string);
     }
 }

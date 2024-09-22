@@ -6,13 +6,14 @@ import org.nseu.practice.util.nameutil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class Team {
 
-    private ArrayList<UUID> Member = new ArrayList<>();
+    private List<UUID> Member = new ArrayList<>();
 
-    public Team(ArrayList<UUID> member) {
+    public Team(List<UUID> member) {
         this.Member = member;
     }
 
@@ -26,7 +27,7 @@ public class Team {
         return true;
     }
 
-    public ArrayList<UUID> getMembers() {
+    public List<UUID> getMembers() {
         return this.Member;
     }
 

@@ -20,9 +20,9 @@ public class Command implements CommandExecutor {
                     //command to short
                     return false;
                 }
-                if(args[0].equalsIgnoreCase("_") && args.length >= 2) {
+                if(args[0].equalsIgnoreCase("_") && args.length >= 3) {
                     String match_id = args[1];
-                    MatchRecord.openRecord(match_id, p);
+                    MatchRecord.openRecord(match_id, args[2], p);
                 }
                 if(args[0].equalsIgnoreCase("메뉴")) {
                     Perform.openMenu(p);

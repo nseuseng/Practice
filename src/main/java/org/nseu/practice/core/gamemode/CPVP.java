@@ -53,4 +53,8 @@ public class CPVP {
         });
         return list;
     }
+
+    public static void addArena(String arenaName) {
+        isLocked.put(arenaName, false);
+    }
 }

@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.nseu.practice</groupId>
-    <artifactId>Practice</artifactId>
+    <artifactId>PracticeCore</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Practice</name>
+    <name>PracticeCore</name>
 
     <properties>
         <java.version>21</java.version>
