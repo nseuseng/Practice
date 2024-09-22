@@ -36,6 +36,8 @@ public class Session {
     public Session(Team team1, Team team2, Arena arena, boolean isRanked, GameMode gameMode, int size) {
         this.team1 = team1;
         this.team2 = team2;
+        System.out.println(team1.getMembers());
+        System.out.println(team2.getMembers());
         this.arena = arena;
         this.gameMode = gameMode;
         this.isRanked = isRanked;
@@ -170,11 +172,5 @@ public class Session {
         if(alldown) {
             Perform.endMatch(this, result);
         }
-    }
-
-    public List<UUID> getAllPlayers() {
-        List<UUID> list = team1.getMembers();
-        list.addAll(team2.getMembers());
-        return list;
     }
 }

@@ -5,10 +5,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.nseu.practice.Main;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PracticePlayer {
@@ -48,11 +45,19 @@ public class PracticePlayer {
     }
 
     public void unhideAll() {
-        hidden.forEach(p -> unhidePlayer(Objects.requireNonNull(Bukkit.getPlayer(p))));
+        for(UUID uuid : hidden) {
+            unhidePlayer(Objects.requireNonNull(Bukkit.getPlayer(uuid)));
+        }
     }
 
     public void unhideFromAll() {
-        hiddenFrom.forEach(p -> PracticePlayer.getPlayer(p).unhidePlayer(Bukkit.getPlayer(this.uuid)));
+        List<UUID> temp = new ArrayList<>();
+        for(UUID uuid : hiddenFrom) {
+            temp.add(uuid);
+        }
+        for(UUID uuid : temp) {
+            PracticePlayer.getPlayer(uuid).unhidePlayer(Bukkit.getPlayer(this.uuid));
+        }
     }
 
     private void removeHiddenFrom(UUID uuid) {

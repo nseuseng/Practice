@@ -27,6 +27,16 @@ public class CPVP {
 
     private static HashMap<String, Boolean> isLocked = new HashMap<>();
 
+    public static ArrayList<String> getArenas() {
+        return new ArrayList<>(isLocked.keySet());
+    }
+
+    public static void loadArenas(ArrayList<String> arenas) {
+        arenas.forEach(s -> {
+            isLocked.put(s, false);
+        });
+    }
+
     public static Arena selectArenaAndLock() {
         for(String arenaName : isLocked.keySet()) {
             if(!isLocked.get(arenaName)) {

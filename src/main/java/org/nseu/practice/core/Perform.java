@@ -10,6 +10,7 @@ import org.nseu.practice.core.gamemode.CPVP;
 import org.nseu.practice.core.gamemode.GameMode;
 import org.nseu.practice.core.inventory.InventoryHandler;
 import org.nseu.practice.core.kits.DefaultKits;
+import org.nseu.practice.core.kits.KitInventory;
 import org.nseu.practice.core.match.Session;
 import org.nseu.practice.core.menu.MatchMenu;
 import org.nseu.practice.core.player.PracticePlayer;
@@ -17,6 +18,7 @@ import org.nseu.practice.core.player.Stats;
 import org.nseu.practice.core.queue.PracticeQueue;
 import org.nseu.practice.util.*;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -58,13 +60,6 @@ public class Perform {
                     TeamUtils.teleportTeam(randomTeam, arena.getTeam1loc());
                     TeamUtils.teleportTeam(team, arena.getTeam2loc());
 
-                    randomTeam.getMembers().forEach(member -> {
-                        DefaultKits.loadDefaultkit(Objects.requireNonNull(Bukkit.getPlayer(member)), gameMode.name());
-                    });
-                    team.getMembers().forEach(member -> {
-                        DefaultKits.loadDefaultkit(Objects.requireNonNull(Bukkit.getPlayer(member)), gameMode.name());
-                    });
-
                     TeamUtils.setTeamStatus(randomTeam, PracticePlayer.Status.IS_IN_MATCH_COOLDOWN);
                     TeamUtils.setTeamStatus(team, PracticePlayer.Status.IS_IN_MATCH_COOLDOWN);
                     //send message
@@ -89,16 +84,19 @@ public class Perform {
                     Message.sendMessage(team, msg2);
 
 
-                    randomTeam.getMembers().forEach(member -> {
-                        Player p = Bukkit.getPlayer(member);
-                        System.out.println(p.getName() + " " + gameMode.name());
-                        DefaultKits.loadDefaultkit(p, gameMode.name());
-                    });
-                    team.getMembers().forEach(member -> {
-                        Player p = Bukkit.getPlayer(member);
-                        System.out.println(p.getName() + " " + gameMode.name());
-                        DefaultKits.loadDefaultkit(p, gameMode.name());
-                    });
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            for(UUID member : randomTeam.getMembers()) {
+                                Player p = Bukkit.getPlayer(member);
+                                DefaultKits.loadDefaultkit(p, GameMode.CPVP.name());
+                            }
+                            for(UUID member : team.getMembers()) {
+                                Player p = Bukkit.getPlayer(member);
+                                DefaultKits.loadDefaultkit(p, GameMode.CPVP.name());
+                            }
+                        }
+                    }.runTaskLater(Main.getInstance(), 1L);
                     //3 second invincible
 
                     new BukkitRunnable() {
@@ -210,15 +208,33 @@ public class Perform {
         p.teleport(Main.spawn);
         Bukkit.getOnlinePlayers().forEach(user -> user.showPlayer(Main.getInstance(), p));
         p.setGameMode(org.bukkit.GameMode.SURVIVAL);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                p.getInventory().setContents(InventoryHandler.getMenuInventory().getContents());
+            }
+        }.runTaskLater(Main.getInstance(), 1L);
+
     }
 
     public static void spectate(Player p, Session session) {
         session.addSpectator(p.getUniqueId());
         p.teleport(session.getArena().spectate());
         p.setGameMode(org.bukkit.GameMode.CREATIVE);
-        p.getInventory().setContents(InventoryHandler.getSpecInventory().getContents());
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                p.getInventory().setContents(InventoryHandler.getSpecInventory().getContents());
+            }
+        }.runTaskLater(Main.getInstance(), 1L);
         PracticePlayer.getPlayer(p.getUniqueId()).unhideAll();
-        session.getAllPlayers().forEach(uuid -> {
+
+        session.getTeam1().getMembers().forEach(uuid -> {
+            if(PracticePlayer.getPlayer(uuid).getStatus() == PracticePlayer.Status.IS_PLAYING) {
+                PracticePlayer.getPlayer(uuid).hidePlayer(p);
+            }
+        });
+        session.getTeam2().getMembers().forEach(uuid -> {
             if(PracticePlayer.getPlayer(uuid).getStatus() == PracticePlayer.Status.IS_PLAYING) {
                 PracticePlayer.getPlayer(uuid).hidePlayer(p);
             }

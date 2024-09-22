@@ -19,7 +19,7 @@ public class Team {
 
     public boolean isAllNotPlaying() {
         for(UUID uuid : Member) {
-            if(PracticePlayer.getPlayer(uuid).getStatus() == PracticePlayer.Status.IS_PLAYING) {
+            if(PracticePlayer.getPlayer(uuid) != null && PracticePlayer.getPlayer(uuid).getStatus() == PracticePlayer.Status.IS_PLAYING) {
                 return false;
             }
         }

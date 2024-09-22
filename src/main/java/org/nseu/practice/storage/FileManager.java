@@ -1,6 +1,7 @@
 package org.nseu.practice.storage;
 
 import org.nseu.practice.arena.Arena;
+import org.nseu.practice.core.gamemode.CPVP;
 import org.nseu.practice.core.kits.DefaultKits;
 import org.nseu.practice.core.kits.KitStorage;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -10,23 +11,36 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class FileManager {
 
 
+    private static final String splitter = System.getProperty("file.separator");
     public static void save() {
         CreateFile(PATH);
+        CreateFile(PATH + splitter + "GameModes");
+        CreateFile(PATH + splitter + "GameModes" + splitter + "CPVP");
+        CreateFile(PATH + splitter + "GameModes" + splitter + "CPVP_CUSTOM");
+        CreateFile(PATH + splitter + "GameModes" + splitter + "OnlySword");
+        CreateFile(PATH + splitter + "GameModes" + splitter + "OldCombat");
         DumpYaml(Arena.data(), "Arenas");
         DumpYaml(data, "Main");
         DumpYaml(KitStorage.GetKitConfigs(), "KitConfig");
         DumpYaml(DefaultKits.GetDefaultKits(), "DefaultKits");
+        DumpYaml(CPVP.getArenas(), "GameModes" + splitter + "CPVP" + splitter + "Arena");
     }
 
     private static HashMap<String, String> data = new HashMap<>();
 
     public static void load() {
         CreateFile(PATH);
+        CreateFile(PATH + splitter + "GameModes");
+        CreateFile(PATH + splitter + "GameModes" + splitter + "CPVP");
+        CreateFile(PATH + splitter + "GameModes" + splitter + "CPVP_CUSTOM");
+        CreateFile(PATH + splitter + "GameModes" + splitter + "OnlySword");
+        CreateFile(PATH + splitter + "GameModes" + splitter + "OldCombat");
         HashMap<String, HashMap<String, String>> arenatempfile = new HashMap<>();
         arenatempfile = (HashMap<String, HashMap<String, String>>) LoadYaml("Arenas");
         if(arenatempfile != null) {
@@ -45,6 +59,11 @@ public class FileManager {
         defaultkitstempfile = (HashMap<String, String>) LoadYaml("DefaultKits");
         if (defaultkitstempfile != null) {
             DefaultKits.LoadDefaultKits(defaultkitstempfile);
+        }
+        ArrayList<String> cpvparenatempfile = new ArrayList<>();
+        cpvparenatempfile = (ArrayList<String>) LoadYaml("GameModes" + splitter + "CPVP" + splitter + "Arena");
+        if(cpvparenatempfile != null) {
+            CPVP.loadArenas(cpvparenatempfile);
         }
     }
 

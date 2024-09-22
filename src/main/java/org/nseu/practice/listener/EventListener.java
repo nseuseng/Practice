@@ -232,7 +232,6 @@ public class EventListener implements Listener {
             String leaveMessage = nameutil.name(uuid) + " 이가 서버에서 나갔습니다";
             Message.sendMessage(session.getTeam1(), leaveMessage);
             Message.sendMessage(session.getTeam2(), leaveMessage);
-            session.midPlayerLeave(uuid);
             practicePlayer.setStatus(PracticePlayer.Status.IS_SPECTATING);
             boolean alldown = session.getTeam(uuid).isAllNotPlaying();
             boolean result = !session.getTeam1().contains(uuid);
@@ -297,9 +296,16 @@ public class EventListener implements Listener {
             Message.sendMessage(session.getTeam1(), deathmsg);
             Message.sendMessage(session.getTeam2(), deathmsg);
 
-            boolean alldown = session.getTeam(p.getUniqueId()).isAllNotPlaying();
-            boolean result = !session.getTeam1().contains(p.getUniqueId());
             Perform.spectate(p, session);
+            System.out.println("Ended");
+            boolean alldown = session.getTeam(p.getUniqueId()).isAllNotPlaying();
+            for(UUID uid : session.getTeam(p.getUniqueId()).getMembers()) {
+
+                System.out.println(nameutil.name(uid) + " / " + PracticePlayer.getPlayer(uid).getStatus().name());
+            }
+            boolean result = !session.getTeam1().contains(p.getUniqueId());
+            System.out.println("isALLDOWN " + alldown);
+
             if(alldown) {
                 Perform.endMatch(session, result);
             }

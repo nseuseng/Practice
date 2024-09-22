@@ -1,7 +1,6 @@
 package org.nseu.practice.core.kits;
 
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.PlayerInventory;
 
 import java.io.IOException;
@@ -17,14 +16,19 @@ public class DefaultKits {
     }
 
     public static void loadDefaultkit(Player p, String string) {
-        if(!defaultkits.containsKey(string)) {
-            return;
-        }
         KitInventory kitInventory = defaultkits.get(string).clone();
         defaultkits.put(string, kitInventory.clone());
         p.getInventory().setArmorContents(kitInventory.getArmors().clone());
         p.getInventory().setItemInOffHand(kitInventory.getOffhand().clone());
         p.getInventory().setContents(kitInventory.getInventory().clone());
+        System.out.println(p.getName() + " -> kit " + string);
+    }
+
+    public static KitInventory fetchKit(String string) {
+        if(!defaultkits.containsKey(string)) {
+            return null;
+        }
+        return defaultkits.get(string).clone();
     }
 
     public static HashMap<String, String> GetDefaultKits() {
